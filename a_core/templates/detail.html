@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes {{ object }}</title>
+</head>
+<body>
+    <h1>Detalhes</h1>
+    <ul>
+        {% for field in object.__class__._meta.fields %}
+            <li>
+                <strong>{{ field.verbose_name|capfirst }}:</strong>
+                {{ object|get_field_value:field.name }}
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="{% if back_url %}{% url back_url %}{% else %}/{% endif %}">Voltar</a>
+</body>
+</html>

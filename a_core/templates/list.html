@@ -1,0 +1,42 @@
+{% load extras %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista</title>
+</head>
+<body>
+    <a href="{% url 'a_core:home' %}">Voltar</a>
+    <h1>Lista</h1>
+    <a href="{% url criar_url %}">{{ label_criar }}</a>
+    <ul>
+        {% for obj in object_list %}
+            <li>
+                {{ obj }} <a href="{% url editar_url obj.pk %}">Editar</a>
+                {% if laudo_topicos and laudo_topicos|get_item:obj.pk %}
+                    <ul>
+                        {% for topico in laudo_topicos|get_item:obj.pk %}
+                            <li>{{ topico }}</li>
+                        {% empty %}
+                            <li>Nenhum tópico associado.</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                {% if laudo_redacoes and laudo_redacoes|get_item:obj.pk %}
+                    <ul>
+                        {% for redacao in laudo_redacoes|get_item:obj.pk %}
+                            <li>{{ redacao }}</li>
+                        {% empty %}
+                            <li>Nenhuma redação associada.</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </li>
+        {% empty %}
+            <li>Nenhum item encontrado.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
