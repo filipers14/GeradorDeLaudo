@@ -4,16 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detalhes {{ object }}</title>
+    <a href="{% url 'a_core:produzir_laudo' object.pk %}">Produzir Laudo</a>
 </head>
 <body>
     <h1>Detalhes</h1>
+    <h2>{{ object }}</h2>
     <ul>
-        {% for field in object.__class__._meta.fields %}
-            <li>
-                <strong>{{ field.verbose_name|capfirst }}:</strong>
-                {{ object|get_field_value:field.name }}
-            </li>
-        {% endfor %}
+        <li><strong>Nome do Laudo:</strong> {{ object.nome_laudo_modelo }}</li>
+        <li><strong>Tópicos Associados:</strong>
+            {% if object.topicos_associados.all %}
+                <ul>
+                {% for topico in object.topicos_associados.all %}
+                    <li>
+                        {{ topico.nome_topico }}
+                        {% if topico.redacoes_associadas.all %}
+                            <ul>
+                                {% for redacao in topico.redacoes_associadas.all %}
+                                    <li>- {{ redacao.nome_redacao }}: {{ redacao.texto_redacao|truncatechars:50 }}</li>
+                                {% empty %}
+                                    <li>Nenhuma redação associada.</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <div style="margin-left: 20px;">Nenhuma redação associada a este tópico.</div>
+                        {% endif %}
+                    </li>
+                {% empty %}
+                    <li>Nenhum tópico associado.</li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                Nenhum tópico associado.
+            {% endif %}
+        </li>
+        <li><strong>Redações Associadas diretamente ao Laudo:</strong>
+            {% if object.redacoes_associadas.all %}
+                <ul>
+                {% for redacao in object.redacoes_associadas.all %}
+                    <li>{{ redacao.nome_redacao }}: {{ redacao.texto_redacao|truncatechars:50 }}</li>
+                {% empty %}
+                    <li>Nenhuma redação associada diretamente.</li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                Nenhuma redação associada diretamente.
+            {% endif %}
+        </li>
     </ul>
     <a href="{% if back_url %}{% url back_url %}{% else %}/{% endif %}">Voltar</a>
 </body>

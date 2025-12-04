@@ -23,4 +23,6 @@ urlpatterns = [
     path('laudo/<int:pk>/', DetalhesLaudoModelo.as_view(), name='detalhes_laudo_modelo'),
     path('topico/<int:pk>/', DetalhesTopicoModelo.as_view(), name='detalhes_topico_modelo'),
 
+    path('produzirlaudo/<int:pk>', ProduzirLaudo.as_view(), name='produzir_laudo'),
+
 ]

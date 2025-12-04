@@ -1,4 +1,5 @@
 {% load extras %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,23 +14,26 @@
     <ul>
         {% for obj in object_list %}
             <li>
-                {{ obj }} <a href="{% url editar_url obj.pk %}">Editar</a>
-                {% if laudo_topicos and laudo_topicos|get_item:obj.pk %}
+                <a href="{% url 'a_core:detalhes_laudo_modelo' obj.pk %}">{{ obj }}</a> <a href="{% url editar_url obj.pk %}">Editar</a>
+                {% if obj.topicos_associados.all %}
                     <ul>
-                        {% for topico in laudo_topicos|get_item:obj.pk %}
-                            <li>{{ topico }}</li>
+                        {% for topico in obj.topicos_associados.all %}
+                            <li>
+                                <strong>{{ topico.nome_topico }}</strong>
+                                <ul style="margin-left: 20px;">
+                                    {% if topico.redacoes_associadas.all %}
+                                        {% for redacao in topico.redacoes_associadas.all %}
+                                            <li>- {{ redacao.nome_redacao }}: {{ redacao.texto_redacao|truncatechars:50 }}</li>
+                                        {% empty %}
+                                            <li>Nenhuma redação associada a este tópico.</li>
+                                        {% endfor %}
+                                    {% else %}
+                                        <li>Nenhuma redação associada a este tópico.</li>
+                                    {% endif %}
+                                </ul>
+                            </li>
                         {% empty %}
                             <li>Nenhum tópico associado.</li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
-
-                {% if laudo_redacoes and laudo_redacoes|get_item:obj.pk %}
-                    <ul>
-                        {% for redacao in laudo_redacoes|get_item:obj.pk %}
-                            <li>{{ redacao }}</li>
-                        {% empty %}
-                            <li>Nenhuma redação associada.</li>
                         {% endfor %}
                     </ul>
                 {% endif %}

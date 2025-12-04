@@ -1,18 +1,20 @@
 # a_core/templatetags/extras.py
 
-# Importa o módulo "template" do Django, necessário para criar filtros customizados para templates
+# Para essa tag (filtro customizado) funcionar, siga estes passos:
+# 1. Crie uma pasta chamada "templatetags" dentro do seu app (já existe neste caso: a_core/templatetags).
+# 2. Garanta que exista um arquivo __init__.py dentro dessa pasta para que vire um pacote Python.
+# 3. Defina o filtro customizado neste arquivo (conforme abaixo).
+# 4. Nos seus templates, carregue o filtro com {% load extras %}, onde "extras" é o nome deste arquivo (sem .py).
+# 5. Utilize o filtro normalmente no template, ex: {{ dict|get_item:somekey }}
+
 from django import template
 
-# Cria um objeto de registro de biblioteca de filtros, necessário para registrar novos filtros
 register = template.Library()
 
-# Registra a função abaixo como um filtro customizado no Django template system
 @register.filter
 def get_item(dictionary, key):
     """
     Retorna o valor associado à chave 'key' no dicionário passado como parâmetro.
     Útil para acessar dinamicamente valores de dicionários dentro dos templates Django.
     """
-    # Usa o método get do dicionário para tentar obter o valor da chave.
-    # Se a chave não existir, retorna None por padrão.
     return dictionary.get(key)

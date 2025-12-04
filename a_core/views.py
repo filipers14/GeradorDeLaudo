@@ -1,11 +1,11 @@
 from typing import Any
 
 
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse_lazy
-from django.views.generic import TemplateView, ListView, UpdateView, CreateView, DetailView
+from django.views.generic import TemplateView, ListView, UpdateView, CreateView, DetailView, View
 
-from a_core.forms import FormLaudo, FormRedacao, FormTopico
+from a_core.forms import FormLaudo, FormRedacao, FormTopico, FormularioDinamico
 from a_core.models import *
 
 # Create your views here.
@@ -66,7 +66,6 @@ class ListaTopicoModelo(ListView):
         context['editar_url'] = 'a_core:editar_topico_modelo'
         return context
 
-
 class CriarLaudoModelo(CreateView):
     model = LaudoModelo
     form_class = FormLaudo
@@ -74,8 +73,9 @@ class CriarLaudoModelo(CreateView):
     success_url = reverse_lazy('a_core:lista_laudo_modelo')
 
 class DetalhesLaudoModelo(DetailView):
-    pass
-
+    model = LaudoModelo
+    template_name = 'detail.html'
+    
 class EditarLaudoModelo(UpdateView):
     model = LaudoModelo
     form_class = FormLaudo
@@ -92,19 +92,33 @@ class ListaLaudoModelo(ListView):
         context['label_criar'] = 'Criar Laudo'
         context['editar_url'] = 'a_core:editar_laudo_modelo'
 
-        # INSERT_YOUR_CODE
-        # Para cada laudo em object_list, coletar os tópicos e redações associadas
-        laudo_topicos = {}
-        laudo_redacoes = {}
-        for laudo in context.get('object_list', []):
-            topicos = laudo.topicos_associados.all()
-            redacoes = laudo.redacoes_associadas.all()
-            laudo_topicos[laudo.pk] = topicos
-            laudo_redacoes[laudo.pk] = redacoes
-        context['laudo_topicos'] = laudo_topicos
-        context['laudo_redacoes'] = laudo_redacoes
         return context
     
 
+class ProduzirLaudo(View):
+
+    def get(self, request, pk):
+        laudo = get_object_or_404(LaudoModelo, pk=pk)
+
+        topicos_associados = laudo.topicos_associados.all()
+
+        redacoes_associadas =[]
+        for topico in topicos_associados:
+            redacoes_associadas.extend(topico.redacoes_associadas.all())
+
+        variaveis = set()
+
+        for redacao in redacoes_associadas:
+            texto = redacao.texto_redacao
+            variaveis.update(self.encontrar_variaveis(texto))
+
+        form = FormularioDinamico(variaveis=variaveis)
+
+        return render(request, 'produzir_laudo.html', {'form': form, 'laudo': laudo})
+
+    def encontrar_variaveis(self, texto):
+        import re
+        # Usar expressão regular para encontrar as variáveis
+        return re.findall(r'<<(\w+)>>', texto)
 
     
