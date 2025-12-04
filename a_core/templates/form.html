@@ -9,6 +9,58 @@
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
+
+        {% if formset %}
+            <h3>Valores da Variável</h3>
+            {{ formset.management_form }}
+            <table>
+                {% for form_in in formset %}
+                    <tr>
+                        <td>
+                            {{ form_in.id }}
+                            {{ form_in.valor_variavel.label_tag }}
+                            {{ form_in.valor_variavel }}
+                        </td>
+                        <td>
+                            {{ form_in.status.label_tag }}
+                            {{ form_in.status }}
+                        </td>
+                        <td>
+                            {% if formset.can_delete %}
+                                {{ form_in.DELETE }} <span>Remover</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+            <button type="button" onclick="addForm(this);">Adicionar valor</button>
+            <script>
+                // Simples inserção de template de novo formulário pelo frontend (para uso básico; pode melhorar conforme necessário)
+                function addForm(btn) {
+                    var totalForms = document.querySelector('[name$="-TOTAL_FORMS"]');
+                    var currentForms = parseInt(totalForms.value);
+                    var formsetTable = btn.previousElementSibling; // table
+
+                    // Copia do último form como base para o novo
+                    var lastRow = formsetTable.rows[formsetTable.rows.length - 1];
+                    var newRow = lastRow.cloneNode(true);
+
+                    // Atualizar os campos name e value
+                    newRow.innerHTML = newRow.innerHTML.replace(
+                        new RegExp('-' + (currentForms-1) + '-', 'g'),
+                        '-' + currentForms + '-'
+                    );
+                    // Limpar valores
+                    Array.from(newRow.querySelectorAll('input')).forEach(function(input) {
+                        if (input.type === 'checkbox') input.checked = false;
+                        else input.value = '';
+                    });
+                    formsetTable.appendChild(newRow);
+
+                    totalForms.value = currentForms + 1;
+                }
+            </script>
+        {% endif %}
         <button type="submit">Salvar</button>
     </form>
 </body>

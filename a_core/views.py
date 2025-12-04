@@ -1,6 +1,7 @@
 from typing import Any
 
 from django.shortcuts import redirect
+from django.forms import inlineformset_factory
 
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse_lazy
@@ -55,7 +56,6 @@ class EditarTopicoModelo(UpdateView):
     template_name = 'form.html'
     success_url = reverse_lazy('a_core:lista_topico_modelo')
 
-
 class ListaTopicoModelo(ListView):
     model = TopicoModelo
     template_name = 'list.html'
@@ -98,10 +98,11 @@ class CriarLaudoModelo(CreateView):
                 for nome_var in variaveis:
                     if nome_var not in variaveis_existem:
                         VariaveisModelo.objects.create(
-                            nome_variavel=nome_var,
-                            string_substituicao='',
+                            nome_variavel=' '.join(word.capitalize() for word in nome_var.split('_')),
+                            string_substituicao=nome_var,
                             tipo_campo='Campo Aberto',  # ou algum padrão desejado
-                            status='ativo'
+                            status='ativo',
+                            laudo_associado=laudo
                         )
                         variaveis_existem.add(nome_var)
         # Também verificar as redacoes_associadas diretamente ao laudo (caso esteja usando esse m2m)
@@ -110,10 +111,11 @@ class CriarLaudoModelo(CreateView):
             for nome_var in variaveis:
                 if nome_var not in variaveis_existem:
                     VariaveisModelo.objects.create(
-                        nome_variavel=nome_var,
+                        nome_variavel=' '.join(word.capitalize() for word in nome_var.split('_')),
                         string_substituicao='',
                         tipo_campo='Campo Aberto',
-                        status='ativo'
+                        status='ativo',
+                        laudo_associado=laudo
                     )
                     variaveis_existem.add(nome_var)
 
@@ -142,7 +144,6 @@ class DeletarLaudoModelo(DeleteView):
         # Não renderiza nenhum template.
         return []
 
-
 class ListaLaudoModelo(ListView):
     model = LaudoModelo
     template_name = 'list.html'
@@ -155,6 +156,54 @@ class ListaLaudoModelo(ListView):
 
         return context
     
+class EditarVariavelModelo(UpdateView):
+    model = VariaveisModelo
+    template_name = 'form.html'
+    form_class = FormVariavel
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        ValorVariavelFormSet = inlineformset_factory(
+            VariaveisModelo,
+            ValorVariavelModelo,
+            fields=('valor_variavel', 'status'),
+            extra=1,
+            can_delete=True
+        )
+
+        if self.request.method == 'POST':
+            formset = ValorVariavelFormSet(self.request.POST, instance=self.object)
+        else:
+            formset = ValorVariavelFormSet(instance=self.object)
+        context['formset'] = formset
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        formset = context['formset']
+        if formset.is_valid():
+            self.object = form.save()
+            formset.instance = self.object
+            formset.save()
+            laudo_pk = self.object.laudo_associado.pk
+            return redirect('a_core:detalhes_laudo_modelo', pk=laudo_pk)
+        else:
+            return self.form_invalid(form)
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
+        context = self.get_context_data(**kwargs)
+        formset = context['formset']
+        if form.is_valid() and formset.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
+    def get_success_url(self):
+        laudo_pk = self.object.laudo_associado.pk
+        return reverse_lazy('a_core:detalhes_laudo_modelo', kwargs={'pk': laudo_pk})
+
 
 # class ProduzirLaudo(View):
 

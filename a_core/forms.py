@@ -1,6 +1,6 @@
 from django import forms
 
-from a_core.models import LaudoModelo, RedacaoModelo, TopicoModelo
+from a_core.models import LaudoModelo, RedacaoModelo, TopicoModelo, VariaveisModelo
 
 class FormRedacao(forms.ModelForm):
     class Meta:
@@ -16,6 +16,11 @@ class FormLaudo(forms.ModelForm):
     class Meta:
         model = LaudoModelo
         fields = ['nome_laudo_modelo', 'topicos_associados','redacoes_associadas']
+
+class FormVariavel(forms.ModelForm):
+    class Meta:
+        model = VariaveisModelo
+        fields = ['nome_variavel', 'tipo_campo','status']
 
 # class FormularioDinamico(forms.Form):
 #     def __init__(self, *args, **kwargs):

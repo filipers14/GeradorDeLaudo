@@ -4,11 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detalhes {{ object }}</title>
-    <!-- <a href="{% url 'a_core:produzir_laudo' object.pk %}">Produzir Laudo</a> -->
+
 </head>
 <body>
     <h1>Detalhes</h1>
     <h2>{{ object }}</h2>
+
+    <ul><strong>Variáveis Associadas</strong>
+        {% if object.variaveismodelo_set.all %}
+            <ul>
+                {% for variavel in object.variaveismodelo_set.all %}
+                    <a href="{% url 'a_core:detalhes_variavel_modelo' variavel.pk %}"><li>{{ variavel }}</li></a>
+                {% empty %}
+                    <li>Nenhuma variável associada.</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <li>Nenhuma variável associada.</li>
+        {% endif %}
+
+    </ul>
+
     <ul>
         <li><strong>Nome do Laudo:</strong> {{ object.nome_laudo_modelo }}</li>
         <li><strong>Tópicos Associados:</strong>
