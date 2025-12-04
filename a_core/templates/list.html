@@ -15,6 +15,10 @@
         {% for obj in object_list %}
             <li>
                 <a href="{% url 'a_core:detalhes_laudo_modelo' obj.pk %}">{{ obj }}</a> <a href="{% url editar_url obj.pk %}">Editar</a>
+                <form action="{% url 'a_core:deletar_laudo_modelo' obj.pk %}" method="post" style="display:inline;" onsubmit="return confirm('Tem certeza que deseja deletar este laudo?');">
+                    {% csrf_token %}
+                    <button type="submit">Deletar Laudo</button>
+                </form>
                 {% if obj.topicos_associados.all %}
                     <ul>
                         {% for topico in obj.topicos_associados.all %}

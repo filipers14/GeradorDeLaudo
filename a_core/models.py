@@ -32,6 +32,7 @@ class VariaveisModelo(models.Model):
         ('Campo Seletor', 'Campo Seletor'),
     ]
     tipo_campo = models.CharField(choices=TIPO_CAMPO, verbose_name = 'Tipo de Variável')
+    laudo_associado = models.ForeignKey('LaudoModelo', on_delete=models.CASCADE)
 
     STATUS_CHOICES = (('ativo', 'Ativo'), ('inativo', 'Inativo'),)
 

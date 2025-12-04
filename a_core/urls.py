@@ -23,6 +23,8 @@ urlpatterns = [
     path('laudo/<int:pk>/', DetalhesLaudoModelo.as_view(), name='detalhes_laudo_modelo'),
     path('topico/<int:pk>/', DetalhesTopicoModelo.as_view(), name='detalhes_topico_modelo'),
 
-    path('produzirlaudo/<int:pk>', ProduzirLaudo.as_view(), name='produzir_laudo'),
+    # path('produzirlaudo/<int:pk>', ProduzirLaudo.as_view(), name='produzir_laudo'),
+
+    path('deletarlaudomodelo/<int:pk>', DeletarLaudoModelo.as_view(), name='deletar_laudo_modelo'),
 
 ]
