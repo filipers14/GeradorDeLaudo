@@ -9,7 +9,7 @@
 <body>
     <h1>Detalhes</h1>
     <h2>{{ object }}</h2>
-
+    <a href="{% url 'a_core:produzir_laudo' object.pk %}">Produzir Laudo</a>
     <ul><strong>Variáveis Associadas</strong>
         {% if object.variaveismodelo_set.all %}
             <ul>

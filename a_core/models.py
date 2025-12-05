@@ -27,11 +27,7 @@ class VariaveisModelo(models.Model):
     '''
     nome_variavel = models.CharField(max_length=150, verbose_name = 'Nome da Variável')
     string_substituicao = models.CharField(max_length=150, verbose_name = 'String de Substituição')
-    TIPO_CAMPO =[
-        ('Campo Aberto', "Campo Aberto"),
-        ('Campo Seletor', 'Campo Seletor'),
-    ]
-    tipo_campo = models.CharField(choices=TIPO_CAMPO, verbose_name = 'Tipo de Variável')
+
     laudo_associado = models.ForeignKey('LaudoModelo', on_delete=models.CASCADE)
 
     STATUS_CHOICES = (('ativo', 'Ativo'), ('inativo', 'Inativo'),)

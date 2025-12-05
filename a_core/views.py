@@ -1,4 +1,5 @@
 from typing import Any
+import pdb
 
 from django.shortcuts import redirect
 from django.forms import inlineformset_factory
@@ -157,52 +158,98 @@ class ListaLaudoModelo(ListView):
         return context
     
 class EditarVariavelModelo(UpdateView):
+    # Define o modelo que será utilizado para update: VariaveisModelo
     model = VariaveisModelo
+    
+    # Define o template HTML que será usado para renderizar o formulário de edição
     template_name = 'form.html'
+    
+    # Define qual formulário será utilizado para representar o modelo
     form_class = FormVariavel
 
     def get_context_data(self, **kwargs):
+        # Obtém o contexto padrão do método da superclasse e adiciona informações extras
         context = super().get_context_data(**kwargs)
+        
+        # Declaração do formset dinâmico atrelado à variável para os valores da variável;
+        # Usa inlineformset_factory para ligar VariaveisModelo <-> ValorVariavelModelo via ForeignKey,
+        # incluindo os campos 'valor_variavel' e 'status', permitindo um extra (mínimo 1) e remoção (can_delete=True)
         ValorVariavelFormSet = inlineformset_factory(
-            VariaveisModelo,
-            ValorVariavelModelo,
-            fields=('valor_variavel', 'status'),
-            extra=1,
-            can_delete=True
+            VariaveisModelo,              # Modelo principal
+            ValorVariavelModelo,          # Modelo do formset inline
+            fields=('valor_variavel', 'status'),  # Campos do formset
+            extra=1,                      # Sempre um formulário extra (vazio) para adicionar novo valor
+            can_delete=True               # Permite excluir valores existentes
         )
-
+        
+        # Se a requisição for POST, inicializa o formset com os dados enviados pelo usuário
         if self.request.method == 'POST':
+            # Cria o formset com os dados POSTando e instancia vinculada ao objeto editado
             formset = ValorVariavelFormSet(self.request.POST, instance=self.object)
         else:
+            # Caso contrário, inicializa o formset apenas com o objeto atual para exibir valores existentes
             formset = ValorVariavelFormSet(instance=self.object)
+        
+        # Adiciona o formset ao contexto para acesso no template e processamento posterior
         context['formset'] = formset
+        # Retorna o contexto enriquecido para ser usado na renderização do template
         return context
 
     def form_valid(self, form):
+        # Recupera o contexto (com formset incluso) – faz nova chamada para garantir consistência em casos edge-case
         context = self.get_context_data()
+        # Obtém o formset do contexto para processar submissão múltipla (form principal + inline)
         formset = context['formset']
+        # Verifica se o formset é válido (campos filhos)
         if formset.is_valid():
+            # Salva o formulário principal (atualiza a variável)
             self.object = form.save()
+            # Vincula o formset (modelo filho) ao objeto salvo/atualizado
             formset.instance = self.object
+            # Salva todos os objetos filhos submetidos pelo formset, incluindo alterações e novas criações
             formset.save()
+            # Recupera a chave primária do laudo associado para redirecionamento pós-salvamento
             laudo_pk = self.object.laudo_associado.pk
+            # Redireciona o usuário para a página de detalhes do laudo associado, indicando sucesso
             return redirect('a_core:detalhes_laudo_modelo', pk=laudo_pk)
         else:
+            # Caso qualquer formulário filho seja inválido, retorna resposta de formulário inválido
             return self.form_invalid(form)
 
     def post(self, request, *args, **kwargs):
+        # Ao receber um POST, define o objeto que será editado
         self.object = self.get_object()
+        # Obtém o formulário principal já preenchido com os dados do POST
         form = self.get_form()
+        # Recupera o contexto (incluindo o formset carregado com request.POST)
         context = self.get_context_data(**kwargs)
+        # Obtém o formset do contexto para validação
         formset = context['formset']
+        # Verifica se tanto o formulário principal quanto o formset são válidos
         if form.is_valid() and formset.is_valid():
+            # Se ambos estiverem válidos, chama o método padrão para salvar tudo adequadamente
             return self.form_valid(form)
         else:
+            # Se houver qualquer erro em algum dos formulários ou formsets, exibe novamente o formulário para correção
             return self.form_invalid(form)
 
     def get_success_url(self):
+        # Ao concluir a operação com sucesso, determina dinamicamente a URL para redirecionamento,
+        # utilizando a chave primária do laudo associado ao objeto editado
         laudo_pk = self.object.laudo_associado.pk
+        # Retorna a URL reversa para a view de detalhes do laudo modelo correspondente
         return reverse_lazy('a_core:detalhes_laudo_modelo', kwargs={'pk': laudo_pk})
+
+class ProduzirLaudo(View):
+    def get(self, request, pk):
+        laudo = get_object_or_404(LaudoModelo, pk=pk)
+
+        variaveis_laudo = laudo.variaveismodelo_set.filter(status='ativo')
+
+        form = FormularioDinamico(variaveis = variaveis_laudo)
+
+        return render(request, 'produzir_laudo.html', {'form':form, 'laudo':laudo})
+    pass
 
 
 # class ProduzirLaudo(View):

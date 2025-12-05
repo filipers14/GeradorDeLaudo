@@ -1,5 +1,5 @@
 from django import forms
-
+import pdb
 from a_core.models import LaudoModelo, RedacaoModelo, TopicoModelo, VariaveisModelo
 
 class FormRedacao(forms.ModelForm):
@@ -20,12 +20,21 @@ class FormLaudo(forms.ModelForm):
 class FormVariavel(forms.ModelForm):
     class Meta:
         model = VariaveisModelo
-        fields = ['nome_variavel', 'tipo_campo','status']
+        fields = ['nome_variavel','status']
 
-# class FormularioDinamico(forms.Form):
-#     def __init__(self, *args, **kwargs):
-#         variaveis = kwargs.pop('variaveis', [])
-#         super().__init__(*args, **kwargs)
+class FormularioDinamico(forms.Form):
+    def __init__(self, *args, **kwargs):
+        variaveis = kwargs.pop('variaveis', [])
+        super().__init__(*args, **kwargs)
+        from a_core.models import ValorVariavelModelo, VariaveisModelo
 
-#         for var in variaveis:
-#                 self.fields[var] = forms.CharField(label=var, required=True)
+        for variavel_obj in variaveis:
+            var_nome = variavel_obj.nome_variavel  # Use o nome da variável como o nome do campo
+            valores = ValorVariavelModelo.objects.filter(variavel_associada=variavel_obj, status='ativo')
+            
+
+            if valores.exists():
+                escolhas = [(v.valor_variavel, v.valor_variavel) for v in valores]
+                self.fields[var_nome] = forms.ChoiceField(label=var_nome, choices=escolhas, required=True)
+            else:
+                self.fields[var_nome] = forms.CharField(label=var_nome, required=True)
