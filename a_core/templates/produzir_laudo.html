@@ -6,11 +6,61 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>Produzir Laudo: {{ laudo.nome }}</h1>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Gerar Laudo</button>
-        </form>
+    <h1>Produzir Laudo: {{ laudo.nome_laudo_modelo }}</h1>
+    <div style="display: flex; gap: 40px; align-items: flex-start;">
+        <!-- Coluna do formulário -->
+        <div style="flex: 1;">
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit">Gerar Laudo</button>
+            </form>
+        </div>
+        <!-- Coluna das redações -->
+        <div style="flex: 2;">
+            <h2>Redações do Laudo</h2>
+            <div>
+                <strong>Tópicos Associados:</strong>
+                {% if laudo.topicos_associados.all %}
+                    <ul>
+                    {% for topico in laudo.topicos_associados.all %}
+                        <li>
+                            {{ topico.nome_topico }}
+                            {% if topico.redacoes_associadas.all %}
+                                <ul>
+                                    {% for redacao in topico.redacoes_associadas.all %}
+                                        <li>- {{ redacao.nome_redacao }}: {{ redacao.texto_redacao|truncatechars:50 }}</li>
+                                    {% empty %}
+                                        <li>Nenhuma redação associada.</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <div style="margin-left: 20px;">Nenhuma redação associada a este tópico.</div>
+                            {% endif %}
+                        </li>
+                    {% empty %}
+                        <li>Nenhum tópico associado.</li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    Nenhum tópico associado.
+                {% endif %}
+            </div>
+            <div style="margin-top: 20px;">
+                <strong>Redações Associadas diretamente ao Laudo:</strong>
+                {% if laudo.redacoes_associadas.all %}
+                    <ul>
+                    {% for redacao in laudo.redacoes_associadas.all %}
+                        <li>{{ redacao.nome_redacao }}: {{ redacao.texto_redacao|truncatechars:50 }}</li>
+                    {% empty %}
+                        <li>Nenhuma redação associada diretamente.</li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    Nenhuma redação associada diretamente.
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </body>
 </html>

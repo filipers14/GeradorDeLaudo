@@ -1,8 +1,9 @@
 from typing import Any
 import pdb
 
+from django.db.models import query
 from django.shortcuts import redirect
-from django.forms import inlineformset_factory
+from django.forms import inlineformset_factory, modelformset_factory
 
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse_lazy
@@ -240,17 +241,56 @@ class EditarVariavelModelo(UpdateView):
         # Retorna a URL reversa para a view de detalhes do laudo modelo correspondente
         return reverse_lazy('a_core:detalhes_laudo_modelo', kwargs={'pk': laudo_pk})
 
+class OrdenarLaudo(View):
+    def get(self,request,pk):
+        laudo = LaudoModelo.objects.get(pk=pk)
+        laudo_topico = LaudoTopico.objects.filter(laudo=laudo)
+        form = OrdenarLaudoTopicoFormSet(queryset = laudo_topico)
+
+        return render(request, 'ordem_laudo.html', {'form':form, 'laudo_topico':laudo_topico})
+
+    def post(self, request, pk):
+        laudo = LaudoModelo.objects.get(pk=pk)
+        laudo_topico = LaudoTopico.objects.filter(laudo=laudo)
+        # Precisamos garantir que o formset recebe os IDs corretos dos objetos existentes!
+        # Quando o formset é renderizado, devem existir os campos ocultos "id" para chave primária.
+        # Ao processar, deve existir management_form E cada "form" do formset deve ter o id do objeto, por exemplo id="form-0-id" etc.
+        # Se você está recebendo erros 'id': ['This field is required.'], provavelmente o POST não está enviando esses campos.
+        # Uma solução é garantir que o formset está sendo renderizado dentro do <form> usando {{ form.management_form }} e {{ f.id }} (ou {{ f.as_p }}, que inclui o id oculto).
+
+        # Independentemente, force extra=0 pois só queremos editar existentes:
+        form = OrdenarLaudoTopicoFormSet(request.POST, queryset=laudo_topico)
+
+        if form.is_valid():
+            form.save()
+            laudo_pk = laudo.pk
+            return redirect('a_core:detalhes_laudo_modelo', pk=laudo_pk)
+        else:
+            erro_msg = form.errors or form.non_form_errors()
+            # Dica extra para debugging: printar o POST recebido e cleaned_data para entender o erro
+            # print("POST:", request.POST)
+            # print("Errors:", form.errors, form.non_form_errors())
+            return render(
+                request,
+                'ordem_laudo.html',
+                {
+                    'form': form,
+                    'laudo_topico': laudo_topico,
+                    'erro_msg': erro_msg,
+                }
+            )
+    
+
 class ProduzirLaudo(View):
     def get(self, request, pk):
         laudo = get_object_or_404(LaudoModelo, pk=pk)
-
         variaveis_laudo = laudo.variaveismodelo_set.filter(status='ativo')
-
         form = FormularioDinamico(variaveis = variaveis_laudo)
-
         return render(request, 'produzir_laudo.html', {'form':form, 'laudo':laudo})
-    pass
 
+
+class GerarLaudo(View):
+    pass
 
 # class ProduzirLaudo(View):
 

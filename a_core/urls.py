@@ -25,6 +25,7 @@ urlpatterns = [
     path('topico/<int:pk>/', DetalhesTopicoModelo.as_view(), name='detalhes_topico_modelo'),
     path('variavel/<int:pk>/', EditarVariavelModelo.as_view(), name='detalhes_variavel_modelo'),
 
+    path('ordenarlaudo/<int:pk>', OrdenarLaudo.as_view(), name='ordenar_laudo'),
     path('produzirlaudo/<int:pk>', ProduzirLaudo.as_view(), name='produzir_laudo'),
 
     path('deletarlaudomodelo/<int:pk>', DeletarLaudoModelo.as_view(), name='deletar_laudo_modelo'),

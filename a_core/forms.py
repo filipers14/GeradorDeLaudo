@@ -1,6 +1,6 @@
 from django import forms
 import pdb
-from a_core.models import LaudoModelo, RedacaoModelo, TopicoModelo, VariaveisModelo
+from a_core.models import LaudoModelo, LaudoTopico, RedacaoModelo, TopicoModelo, VariaveisModelo
 
 class FormRedacao(forms.ModelForm):
     class Meta:
@@ -21,6 +21,14 @@ class FormVariavel(forms.ModelForm):
     class Meta:
         model = VariaveisModelo
         fields = ['nome_variavel','status']
+
+OrdenarLaudoTopicoFormSet = forms.modelformset_factory(
+    LaudoTopico,
+    fields =['topico','ordem'],
+    extra=0,
+    can_delete=False,
+    widgets={'topico': forms.TextInput(attrs={'readonly': 'readonly'})},
+    )
 
 class FormularioDinamico(forms.Form):
     def __init__(self, *args, **kwargs):

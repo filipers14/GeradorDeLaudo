@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Ordenar tópicos do laudo: 
+        {% if laudo_topico and laudo_topico.0.laudo %}
+            {{ laudo_topico.0.laudo.nome_laudo_modelo }}
+        {% else %}
+            (Laudo não encontrado)
+        {% endif %}
+    </h1>
+    <form method="post" autocomplete="off">
+        {% csrf_token %}
+        {{ form.management_form }}
+        {% if form.non_form_errors %}
+            <div style="color:red;">{{ form.non_form_errors }}</div>
+        {% endif %}
+        {% if erro_msg %}
+            <div style="color:red;">{{ erro_msg }}</div>
+        {% endif %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Tópico</th>
+                    <th>Ordem</th>
+                    <th>Excluir</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for f in form %}
+                    <tr>
+                        <div style="display:none;">
+                            {{ f.id }}
+                            {{ f.topico }}
+                        </div>
+                        <td>
+                            {% if f.instance.pk and f.instance.topico %}
+                                {{ f.instance.topico.nome_topico }}
+                            {% else %}
+                                {{ f.topico }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ f.ordem.errors }}
+                            {{ f.ordem }}
+                        </td>
+                        <td>
+                            {# Mesmo que can_delete esteja False, deixo compatível (campo sempre oculto ou removido) #}
+                            {% if f.DELETE %}
+                                {{ f.DELETE }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="3">Nenhum tópico encontrado para ordenar.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit">Salvar Ordem</button>
+    </form>
+</body>
+</html>
